@@ -1,25 +1,29 @@
-from PSI import *
 import multiprocessing
 
 from AST import *
 from PSI import *
+from SQLparse import *
 
 
-def computePostfix(id, postexp, cipherTable, header):
-    '''
+def computePostfix(id_, exp_, psi_, header_):
+    """
     This function will compute the result according to postfix expressions
-    
+
     Tips:
     Before compute the intermediate results, you should judge the type of each opearand from the stack's top:
         If operand is digit, generate the share of digit directly
         If operand is string, select the cipher column from the ciphertable
         If operand is Tensor, use it directly
-    '''
-    operand = []
 
-    '''
     Code here!
-    '''
+    """
+
+    operand = [psi_]
+
+    # 根据 header 可以知道字段是第几个
+
+    # print(exp_)
+
 
     return operand.pop()
 
@@ -29,44 +33,28 @@ def execute(id_, SQL_, header_):
 
     # sys.argv.extend(["--node_id", id])
     import latticex.rosetta as rtt
+    import tensorflow as tf
 
     rtt.activate("SecureNN")
 
-    '''
-    Step1. Load the dataset and PSI
-    
-    Code here!
-    '''
+    # Step1. Load the dataset and PSI
     psi = PSI(id_)
 
-    '''
-    Step2. Parse the SQL
-    '''
+    # Step2. Parse the SQL
     plan = parseSQL(SQL_)
-    '''
-    Code here!
-    '''
 
-    # '''
     # Step3. Transfer the WHERE infix-subquery to postfix-subquery
-    # '''
-    # opAST = infix2postfix(plan['WHERE'])
-    #
-    # '''
+    exp = infix2postfix(plan['WHERE'])
+
     # Step4. Compute the WHERE subquery compute result
-    # '''
-    # compare_result = computePostfix(id, opAST, psi, header)
-    # compare_result = tf.reshape(compare_result, [100, 1])
-    #
-    # '''
+    compare_result = computePostfix(id_, exp, psi, header)
+
     # Step5. Reveal the result to check whether your code is correct
-    # '''
-    # cipher_result = rtt.SecureMul(psi, compare_result)
-    #
-    # sess = tf.compat.v1.Session()
-    # sess.run(tf.compat.v1.global_variables_initializer())
-    # a_and_c_can_get_plain = 0b101
-    # print('From ID:{} plaintext greater result:\n'.format(id), sess.run(rtt.SecureReveal(cipher_result, a_and_c_can_get_plain)))
+    sess = tf.compat.v1.Session()
+    sess.run(tf.compat.v1.global_variables_initializer())
+    a_and_c_can_get_plain = 0b101
+    print(f'From ID:{id_} plaintext greater result:\n',
+          sess.run(rtt.SecureReveal(compare_result, a_and_c_can_get_plain)))
 
 
 SQL = "SELECT ID FROM table WHERE DEPOSIT > 1000000"
