@@ -14,4 +14,7 @@ def infix2postfix(exp):
     Code here!
     """
     # print(exp)
-    return ['deposit', '1000000', '>']
+    # 简单的话
+    # return ['deposit', '500000', '>']
+    # 复杂的话
+    return ['deposit', '500000', 'credit', '5', '<', 'credit', '7', '>=', '>', 'AND']

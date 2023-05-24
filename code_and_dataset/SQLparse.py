@@ -34,13 +34,15 @@ def parseSQL(SQL_):
     Code here!
     """
 
-    # 只考虑最简单的情况 只有and 或者 只有or
     conditions = parse_dir["WHERE"]
-    if "and" in conditions:
-        parse_dir["WHERE"] = conditions.split(" and ")
-    elif "or" in conditions:
-        parse_dir["WHERE"] = conditions.split(" or ")
-    else:
-        parse_dir["WHERE"] = [conditions]
+    # 简单的话
+    # 要求把 deposit > 500000
+    # 转换为 ['deposit', '>', '500000']
+
+    # 复杂的话
+    # 要求把 'deposit > 500000 and (credit < 5 or credit >= 7)'
+    # 转换为 ['deposit', '>', '500000', 'and', '(', 'credit', '<', '5', 'or', 'credit', '>=', '7', ')']
+
+    parse_dir["WHERE"] = ['deposit', '>', '500000', 'and', '(', 'credit', '<', '5', 'or', 'credit', '>=', '7', ')']
 
     return parse_dir

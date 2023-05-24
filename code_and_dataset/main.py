@@ -24,7 +24,6 @@ def computePostfix(id_, exp_, psi_, header_):
 
     # print(exp_)
 
-
     return operand.pop()
 
 
@@ -57,7 +56,11 @@ def execute(id_, SQL_, header_):
           sess.run(rtt.SecureReveal(compare_result, a_and_c_can_get_plain)))
 
 
-SQL = "SELECT ID FROM table WHERE DEPOSIT > 1000000"
+# 简单
+# SQL = "SELECT ID FROM table WHERE DEPOSIT > 1000000"
+# 复杂
+SQL = "SELECT ID,DEPOSIT FROM TABLE WHERE DEPOSIT > 500000 AND (CREDIT < 5 OR CREDIT >= 7)"
+
 header = ['ID', 'AGE', 'CARD', 'CREDIT', 'DEPOSIT']
 
 p0 = multiprocessing.Process(target=execute, args=(0, SQL, header))
