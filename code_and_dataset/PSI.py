@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from tensorboard.compat.proto.rewriter_config_pb2 import RewriterConfig
+
 from loadData import *
 
 
@@ -38,8 +40,8 @@ def PSI(id_):
 
     [rtx, rty, _] = loadData(id_)
     # 对比结果
-    res_1 = np.array([rtx[:, 0], rtx[:, 0], rtx[:, 0], rtx[:, 0], rtx[:, 0]]).transpose()
-    res_2 = np.array([rty[:, 0], rty[:, 0], rty[:, 0], rty[:, 0], rty[:, 0]]).transpose()
+    res_1 = np.array([rtx[:, 0]]).transpose()
+    res_2 = np.array([rty[:, 0]]).transpose()
     res_comp = rtt.SecureEqual(res_1, res_2)
     # 合并结果
     res_merge = tf.concat([rtx, rty[:, 1:]], 1)

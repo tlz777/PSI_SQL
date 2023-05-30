@@ -17,4 +17,4 @@ def infix2postfix(exp):
     # 简单的话
     # return ['deposit', '500000', '>']
     # 复杂的话
-    return ['deposit', '500000', 'credit', '5', '<', 'credit', '7', '>=', '>', 'AND']
+    return ['deposit', '500000', '>', 'credit', '5', '<', 'credit', '7', '>=', 'or', 'and']

@@ -1,30 +1,89 @@
 import multiprocessing
+from queue import LifoQueue
+
+import numpy as np
+import tensorflow as tf
 
 from AST import *
 from PSI import *
 from SQLparse import *
 
 
+# 遇到的问题
+# 1. 精度问题 怎么 b'48.000000' b'48'
+# 2. SecureMul 卡死
+
 def computePostfix(id_, exp_, psi_, header_):
     """
     This function will compute the result according to postfix expressions
 
     Tips:
-    Before compute the intermediate results, you should judge the type of each opearand from the stack's top:
+    Before compute the intermediate results, you should judge the type of each operand from the stack's top:
         If operand is digit, generate the share of digit directly
-        If operand is string, select the cipher column from the ciphertable
+        If operand is string, select the cipher column from the cipher table
         If operand is Tensor, use it directly
 
     Code here!
     """
+    # SQL = "SELECT ID,DEPOSIT FROM TABLE WHERE DEPOSIT > 500000 AND (CREDIT < 5 OR CREDIT >= 7)"
+    # ['deposit', '500000', '>', 'credit', '5', '<', 'credit', '7', '>=', 'or', 'and']
+    import latticex.rosetta as rtt
 
-    operand = [psi_]
+    # 符号表
+    symbolTable = ['<', '<=', '=', '>=', '>', 'or', 'and']
+    # 操作数栈
+    operand = LifoQueue()
+    # 标记字段
+    field = ''
+    # 遍历表达式
+    for exp in exp_:
+        # 数字 生成矩阵并压栈
+        if exp.isdigit():
+            try:
+                # 判断 field 是第几个
+                index = header_.index(field)
+                row = 100
+                col = 1
+                # 数字 构造两个结构
+                sess = tf.compat.v1.Session()
+                sess.run(tf.compat.v1.global_variables_initializer())
+                res = sess.run(rtt.SecureReveal(psi_))
+                res_1 = np.array([res[:, index]]).transpose()
+                res_2 = np.full((row, col), exp)
+                # 保存 在栈中
+                operand.put(res_2)
+                operand.put(res_1)
+            except ValueError:
+                exit(f"SQL 有误 {field} 无效")
 
-    # 根据 header 可以知道字段是第几个
+        elif exp in symbolTable:
+            # 原始数 矩阵
+            res_1 = operand.get()
+            # 构造数 矩阵
+            res_2 = operand.get()
+            # 结果
+            res = res_1
+            if exp == '<':
+                res = rtt.SecureLess(res_1, res_2)
+            elif exp == '<=':
+                res = rtt.SecureLessEqual(res_1, res_2)
+            elif exp == '=':
+                res = rtt.SecureEqual(res_1, res_2)
+            elif exp == '>=':
+                res = rtt.SecureGreaterEqual(res_1, res_2)
+            elif exp == '>':
+                res = rtt.SecureGreater(res_1, res_2)
+            elif exp == 'or':
+                res = rtt.SecureLogicalOr(res_1, res_2)
+            elif exp == 'and':
+                res = rtt.SecureLogicalAnd(res_1, res_2)
+            else:
+                pass
+            operand.put(res)
+        else:
+            field = exp
 
-    # print(exp_)
-
-    return operand.pop()
+    return operand.get()
 
 
 def execute(id_, SQL_, header_):
@@ -32,7 +91,6 @@ def execute(id_, SQL_, header_):
 
     # sys.argv.extend(["--node_id", id])
     import latticex.rosetta as rtt
-    import tensorflow as tf
 
     rtt.activate("SecureNN")
 
@@ -46,22 +104,28 @@ def execute(id_, SQL_, header_):
     exp = infix2postfix(plan['WHERE'])
 
     # Step4. Compute the WHERE subquery compute result
-    compare_result = computePostfix(id_, exp, psi, header)
+    compare_result = computePostfix(id_, exp, psi, header_)
 
     # Step5. Reveal the result to check whether your code is correct
-    sess = tf.compat.v1.Session()
-    sess.run(tf.compat.v1.global_variables_initializer())
-    a_and_c_can_get_plain = 0b101
-    print(f'From ID:{id_} plaintext greater result:\n',
-          sess.run(rtt.SecureReveal(compare_result, a_and_c_can_get_plain)))
+    cipher_result = rtt.SecureMul(psi, compare_result)
+    # try:
+    #     indexList = [header_.index(field) for field in plan['SELECT']]
+    #     sess = tf.compat.v1.Session()
+    #     sess.run(tf.compat.v1.global_variables_initializer())
+    #     a_and_c_can_get_plain = 0b101
+    #     res = sess.run(rtt.SecureReveal(cipher_result, a_and_c_can_get_plain))
+    #     plaintext = np.array([res[:, index] for index in indexList]).transpose()
+    #     print(f'From ID:{id_} plaintext result:\n', plaintext)
+    # except ValueError:
+    #     exit(f"SQL 有误 {plan['SELECT']} 无效")
 
 
 # 简单
 # SQL = "SELECT ID FROM table WHERE DEPOSIT > 1000000"
 # 复杂
-SQL = "SELECT ID,DEPOSIT FROM TABLE WHERE DEPOSIT > 500000 AND (CREDIT < 5 OR CREDIT >= 7)"
+SQL = "SELECT ID, DEPOSIT FROM TABLE WHERE DEPOSIT > 500000 AND (CREDIT < 5 OR CREDIT >= 7)"
 
-header = ['ID', 'AGE', 'CARD', 'CREDIT', 'DEPOSIT']
+header = ['id', 'age', 'card', 'credit', 'deposit']
 
 p0 = multiprocessing.Process(target=execute, args=(0, SQL, header))
 p1 = multiprocessing.Process(target=execute, args=(1, SQL, header))
