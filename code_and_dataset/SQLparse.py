@@ -37,5 +37,5 @@ def parseSQL(SQL_):
     conditions = parse_dir["WHERE"]
     import re
     # 使用正则表达式匹配
-    parse_dir["WHERE"] = re.findall(r'\b\w+\b|[><=()]|[and|or]', conditions)
+    parse_dir["WHERE"] = re.findall(r'\b\w+\b|>=|<=|[><=()]|[and|or]', conditions)
     return parse_dir
