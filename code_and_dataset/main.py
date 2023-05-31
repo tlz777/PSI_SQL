@@ -9,10 +9,6 @@ from PSI import *
 from SQLparse import *
 
 
-# 遇到的问题
-# 1. 精度问题 怎么 b'48.000000' b'48'
-# 2. SecureMul 卡死
-
 def computePostfix(id_, exp_, psi_, header_):
     """
     This function will compute the result according to postfix expressions
@@ -42,13 +38,8 @@ def computePostfix(id_, exp_, psi_, header_):
             try:
                 # 判断 field 是第几个
                 index = header_.index(field)
-                row = 100
-                col = 1
-                # 数字 构造两个结构
-                sess = tf.compat.v1.Session()
-                sess.run(tf.compat.v1.global_variables_initializer())
-                res = sess.run(rtt.SecureReveal(psi_))
-                res_1 = np.array([res[:, index]]).transpose()
+                row, col = 100, 1
+                res_1 = tf.reshape(psi_[:, index], [row, col])
                 res_2 = np.full((row, col), exp)
                 # 保存 在栈中
                 operand.put(res_2)
@@ -78,7 +69,12 @@ def computePostfix(id_, exp_, psi_, header_):
                 res = rtt.SecureLogicalAnd(res_1, res_2)
             else:
                 exit(f"未知运算符 {exp}")
+            # 加上一定出结果
+            sess = tf.compat.v1.Session()
+            sess.run(tf.compat.v1.global_variables_initializer())
+            res = sess.run(rtt.SecureReveal(res))
             operand.put(res)
+
         else:
             field = exp
 
@@ -105,21 +101,31 @@ def execute(id_, SQL_, header_):
     # Step4. Compute the WHERE subquery compute result
     compare_result = computePostfix(id_, exp, psi, header_)
 
+    sess = tf.compat.v1.Session()
+    sess.run(tf.compat.v1.global_variables_initializer())
+    print(f"From ID:{id_} compare_result")
+    print(sess.run(rtt.SecureReveal(compare_result)))
+
     # Step5. Reveal the result to check whether your code is correct
     cipher_result = rtt.SecureMul(psi, compare_result)
-    # try:
-    #     indexList = [header_.index(field) for field in plan['SELECT']]
-    #     sess = tf.compat.v1.Session()
-    #     sess.run(tf.compat.v1.global_variables_initializer())
-    #     a_and_c_can_get_plain = 0b101
-    #     res = sess.run(rtt.SecureReveal(cipher_result, a_and_c_can_get_plain))
-    #     plaintext = np.array([res[:, index] for index in indexList]).transpose()
-    #     print(f'From ID:{id_} plaintext result:\n', plaintext)
-    # except ValueError:
-    #     exit(f"SQL 有误 {plan['SELECT']} 无效")
+    try:
+        sess = tf.compat.v1.Session()
+        sess.run(tf.compat.v1.global_variables_initializer())
+        a_and_c_can_get_plain = 0b101
+        res = sess.run(rtt.SecureReveal(cipher_result, a_and_c_can_get_plain))
+
+        if '*' in plan['SELECT']:
+            indexList = [i for i in range(len(header_))]
+        else:
+            indexList = [header_.index(field) for field in plan['SELECT']]
+        plaintext = np.array([res[:, index] for index in indexList]).transpose()
+        print(f'From ID:{id_} plaintext result:\n', plaintext)
+    except ValueError:
+        exit(f"SQL 有误 {plan['SELECT']} 无效")
 
 
 SQL = "SELECT ID, DEPOSIT FROM TABLE WHERE DEPOSIT > 500000 AND (CREDIT < 5 OR CREDIT >= 7)"
+# SQL = "SELECT ID, DEPOSIT FROM TABLE WHERE DEPOSIT > 500000"
 
 header = ['id', 'age', 'card', 'credit', 'deposit']
 
