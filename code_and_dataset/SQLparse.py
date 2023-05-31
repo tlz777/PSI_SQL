@@ -42,7 +42,8 @@ def parseSQL(SQL_):
     # 复杂的话
     # 要求把 'deposit > 500000 and (credit < 5 or credit >= 7)'
     # 转换为 ['deposit', '>', '500000', 'and', '(', 'credit', '<', '5', 'or', 'credit', '>=', '7', ')']
-    
-    parse_dir["WHERE"] = ['deposit', '>', '500000', 'and', '(', 'credit', '<', '5', 'or', 'credit', '>=', '7', ')']
-
+    import re
+    # 使用正则表达式匹配
+    tokens = re.findall(r'\b\w+\b|[><=()]|[and|or]', conditions)
+    parse_dir["WHERE"] =tokens
     return parse_dir
