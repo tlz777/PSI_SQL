@@ -42,7 +42,7 @@ def parseSQL(SQL_):
     # 复杂的话
     # 要求把 'deposit > 500000 and (credit < 5 or credit >= 7)'
     # 转换为 ['deposit', '>', '500000', 'and', '(', 'credit', '<', '5', 'or', 'credit', '>=', '7', ')']
-
+    
     parse_dir["WHERE"] = ['deposit', '>', '500000', 'and', '(', 'credit', '<', '5', 'or', 'credit', '>=', '7', ')']
 
     return parse_dir
