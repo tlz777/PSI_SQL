@@ -62,7 +62,6 @@ def computePostfix(id_, exp_, psi_, header_):
             # 构造数 矩阵
             res_2 = operand.get()
             # 结果
-            res = res_1
             if exp == '<':
                 res = rtt.SecureLess(res_1, res_2)
             elif exp == '<=':
@@ -78,7 +77,7 @@ def computePostfix(id_, exp_, psi_, header_):
             elif exp == 'and':
                 res = rtt.SecureLogicalAnd(res_1, res_2)
             else:
-                pass
+                exit(f"未知运算符 {exp}")
             operand.put(res)
         else:
             field = exp
@@ -120,9 +119,6 @@ def execute(id_, SQL_, header_):
     #     exit(f"SQL 有误 {plan['SELECT']} 无效")
 
 
-# 简单
-# SQL = "SELECT ID FROM table WHERE DEPOSIT > 1000000"
-# 复杂
 SQL = "SELECT ID, DEPOSIT FROM TABLE WHERE DEPOSIT > 500000 AND (CREDIT < 5 OR CREDIT >= 7)"
 
 header = ['id', 'age', 'card', 'credit', 'deposit']

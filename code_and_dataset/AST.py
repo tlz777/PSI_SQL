@@ -13,12 +13,12 @@ def infix2postfix(exp):
     Code here!
     """
     # 定义运算符的优先级
-    operators = {'<': 1, '<=': 1,'>=': 1,'>': 1,'=': 1, 'and': 2, 'or': 2}
+    operators = {'<': 1, '<=': 1, '>=': 1, '>': 1, '=': 1, 'and': 2, 'or': 2}
     # 初始化一个空栈和一个空列表
     stack = []
     postfix = []
     for char in exp:
-        if char not in operators and char !="(" and char != ")":  # 如果字符是数字或字母，则直接添加到后缀表达式列表
+        if char not in operators and char != "(" and char != ")":  # 如果字符是数字或字母，则直接添加到后缀表达式列表
             postfix.append(char)
         elif char == '(':
             stack.append('(')
@@ -36,10 +36,3 @@ def infix2postfix(exp):
     while stack:
         postfix.append(stack.pop())
     return postfix
-    # 简单的话
-    # return ['deposit', '500000', '>']
-    # 复杂的话
-    # return ['deposit', '500000', '>', 'credit', '5', '<', 'credit', '7', '>=', 'or', 'and']
-
-
-

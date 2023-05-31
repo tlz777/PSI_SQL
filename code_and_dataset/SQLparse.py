@@ -26,7 +26,7 @@ def parseSQL(SQL_):
     For example: if the select condition is "loan>50000 AND loan<1000000", this condition will parse as:
         ['loan>50000', 'AND', 'loan<1000000']
     
-    Above are three subconditions, and we'll substract the subconditions as:
+    Above are three sub conditions, and we'll substract the sub conditions as:
         [['loan', '>', '50000'], ['AND'], ['loan', '<', '1000000']]
     
     Note: this module just for test, only support single table SELECT SQL
@@ -35,15 +35,7 @@ def parseSQL(SQL_):
     """
 
     conditions = parse_dir["WHERE"]
-    # 简单的话
-    # 要求把 deposit > 500000
-    # 转换为 ['deposit', '>', '500000']
-
-    # 复杂的话
-    # 要求把 'deposit > 500000 and (credit < 5 or credit >= 7)'
-    # 转换为 ['deposit', '>', '500000', 'and', '(', 'credit', '<', '5', 'or', 'credit', '>=', '7', ')']
     import re
     # 使用正则表达式匹配
-    tokens = re.findall(r'\b\w+\b|[><=()]|[and|or]', conditions)
-    parse_dir["WHERE"] =tokens
+    parse_dir["WHERE"] = re.findall(r'\b\w+\b|[><=()]|[and|or]', conditions)
     return parse_dir

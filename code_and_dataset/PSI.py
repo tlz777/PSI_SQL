@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from tensorboard.compat.proto.rewriter_config_pb2 import RewriterConfig
 
 from loadData import *
 
